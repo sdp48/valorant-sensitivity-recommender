@@ -55,6 +55,7 @@ This removes obvious parsing errors and outliers.
 
 ## Project structure
 
+```
 valorant-recommender/
 ├── app.py
 ├── README.md
@@ -65,6 +66,7 @@ valorant-recommender/
 ├── scripts/
 │ └── fetch_pro_sens_liquipedia.py
 └── requirements.txt
+```
 
 ---
 
