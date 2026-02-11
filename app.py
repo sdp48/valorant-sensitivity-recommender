@@ -6,12 +6,26 @@ import matplotlib.pyplot as plt
 
 from recommender.sens import (
     load_pro_csv,
-    nearest_pro_examples,
-    choose_target_cm360,
-    sens_from_cm360,
     compute_edpi,
     compute_cm360,
 )
+
+import requests
+
+API_URL = "http://127.0.0.1:8000"
+
+def api_post(path: str, payload: dict):
+    try:
+        r = requests.post(f"{API_URL}{path}", json=payload, timeout=10)
+        r.raise_for_status()
+        return r.json()
+    except Exception:
+        st.error(
+            "Backend API is not running.\n\n"
+            "Start it with:\n"
+            "python -m uvicorn api.main:app --reload"
+        )
+        st.stop()
 
 st.set_page_config(page_title="Valorant Sensitivity Recommender", page_icon="🎯", layout="wide")
 
@@ -38,16 +52,26 @@ pad = st.selectbox("Mousepad size", ["small", "medium", "large"], index=1)
 
 st.divider()
 
-# --- Compute recommendation ---
-low_cm, high_cm = choose_target_cm360(aim_style, goal, pad)
-mid_cm = (low_cm + high_cm) / 2.0
+# --- Compute recommendation (via API) ---
+rec = api_post(
+    "/recommend",
+    {
+        "dpi": int(dpi),
+        "aim_style": aim_style,
+        "goal": goal,
+        "pad": pad,
+        "current_sensitivity": None,
+    },
+)
 
-# lower cm/360 => faster => higher sens
-rec_low_sens = sens_from_cm360(dpi, high_cm)  # slower end
-rec_high_sens = sens_from_cm360(dpi, low_cm)  # faster end
+low_cm = rec["target_cm360"]["low"]
+high_cm = rec["target_cm360"]["high"]
 
-mid_sens = sens_from_cm360(dpi, mid_cm)
-mid_edpi = compute_edpi(dpi, mid_sens)
+rec_low_sens = rec["suggested_sens"]["low"]
+rec_high_sens = rec["suggested_sens"]["high"]
+
+mid_sens = rec["suggested_sens"]["mid"]
+mid_edpi = rec["mid_edpi"]
 
 # --- Output ---
 st.subheader("Recommendation")
@@ -125,7 +149,8 @@ else:
     target_edpi = mid_edpi
     st.caption("Sorted by distance from the recommended midpoint eDPI.")
 
-st.dataframe(nearest_pro_examples(df, target_edpi, k=10), use_container_width=True)
+pros = api_post("/similar", {"edpi": float(target_edpi), "k": 10})
+st.dataframe(pros, use_container_width=True)
 
 st.divider()
 

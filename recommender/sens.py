@@ -71,3 +71,29 @@ def nearest_pro_examples(df: pd.DataFrame, target_edpi: float, k: int = 10) -> p
     tmp["dist"] = (tmp["edpi"] - target_edpi).abs()
     cols = [c for c in ["player", "edpi", "sens", "dpi", "cm360"] if c in tmp.columns]
     return tmp.sort_values("dist").head(k)[cols]
+
+def recommend_sensitivity(dpi: float, aim_style: str, goal: str, pad: str) -> dict:
+    """
+    Returns a recommendation bundle computed from your existing cm/360 rules.
+    Designed to be used by BOTH Streamlit (client) and FastAPI (server).
+    """
+    low_cm, high_cm = choose_target_cm360(aim_style, goal, pad)
+    mid_cm = (low_cm + high_cm) / 2.0
+
+    # lower cm/360 => faster => higher sens
+    rec_low_sens = sens_from_cm360(dpi, high_cm)  # slower end
+    rec_high_sens = sens_from_cm360(dpi, low_cm)  # faster end
+
+    mid_sens = sens_from_cm360(dpi, mid_cm)
+    mid_edpi = compute_edpi(dpi, mid_sens)
+
+    return {
+        "dpi": int(dpi),
+        "target_cm360": {"low": low_cm, "high": high_cm, "mid": round(mid_cm, 1)},
+        "suggested_sens": {
+            "low": round(rec_low_sens, 3),
+            "high": round(rec_high_sens, 3),
+            "mid": round(mid_sens, 3),
+        },
+        "mid_edpi": round(mid_edpi, 0),
+    }

@@ -2,3 +2,6 @@ streamlit
 pandas
 requests
 pytest
+fastapi
+uvicorn
+pydantic

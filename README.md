@@ -2,7 +2,7 @@
 
 This project is a small web app that helps Valorant players find a reasonable in-game sensitivity based on professional player settings and basic aiming heuristics.
 
-I built it mainly to better understand how sensitivity, eDPI, and cm/360 relate to each other, and to practice working with real-world data and APIs. The app is built with Python and Streamlit and pulls data from Liquipedia.
+I built it mainly to better understand how sensitivity, eDPI, and cm/360 relate to each other, and to practice working with real-world data and a simple backend API. The app is built with Python and Streamlit and pulls data from Liquipedia.
 
 ---
 
@@ -13,7 +13,8 @@ I built it mainly to better understand how sensitivity, eDPI, and cm/360 relate 
 - Uses aim style, goal, and mousepad size to choose a target cm/360 range  
 - Converts that range into an in-game sensitivity for the user’s DPI  
 - Compares the user’s sensitivity to pro players using eDPI  
-- Shows where the user sits relative to pros using a simple distribution chart  
+- Shows where the user sits relative to pros using a simple distribution chart
+- Serves recommendations and similarity queries through a small REST API used by the frontend
 
 ---
 
@@ -59,6 +60,9 @@ This removes obvious parsing errors and outliers.
 valorant-recommender/
 ├── app.py
 ├── README.md
+├── api/
+│ └── main.py
+│ └── schemas.py
 ├── data/
 │ └── pro_sens.csv
 ├── recommender/
@@ -72,17 +76,40 @@ valorant-recommender/
 
 ## Running the app locally
 
+This project consists of two components:
+- a FastAPI backend that serves recommendation and similarity endpoints
+- a Streamlit frontend that acts as the client
+
+### 1. Create and activate a virtual environment
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+```
+### 2. Install dependencies
+
+```bash
 pip install -r requirements.txt
+```
+### 3. Start the backend API
 
-# fetch / refresh pro dataset
-python3 scripts/fetch_pro_sens_liquipedia.py
+From the project root run:
+```bash
+python -m uvicorn api.main:app --reload
+```
+The API will be available at: http://127.0.0.1:8000
 
-# run the app
+Interactive API documentation can be found at: http://127.0.0.1:8000/docs
+
+### 4. Start the Streamlit client
+Open a new terminal (keep the API running), then run:
+
+```bash
 streamlit run app.py
 ```
+The Streamlit interface will open in your browser.
+
+The frontend communicates with the backend through REST endpoints to retrieve recommendations and similar professional player comparisons.
 
 ---
 

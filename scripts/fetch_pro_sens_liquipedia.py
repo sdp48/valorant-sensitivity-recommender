@@ -5,14 +5,13 @@ import re
 import time
 import requests
 import pandas as pd
+from typing import Optional
 
 LIQUIPEDIA_API = "https://liquipedia.net/valorant/api.php"
 PAGE = "List_of_player_mouse_settings"
 
 HEADERS = {
-    # Liquipedia asks for a custom User-Agent that identifies your project + contact
-    # (put your email or a GitHub link)
-    "User-Agent": "ValorantRecommender/1.0 (https://github.com/yourname/valorant-recommender; contact: you@example.com)",
+    "User-Agent": "ValorantRecommender/1.0 (https://github.com/shiv48/valorant-recommender; contact: shiv382005@yahoo.com)",
     "Accept-Encoding": "gzip",
 }
 
@@ -32,7 +31,7 @@ def fetch_table_html() -> str:
     data = r.json()
     return data["parse"]["text"]["*"]
 
-def clean_number(x) -> float | None:
+def clean_number(x) -> Optional[float]:
     if x is None:
         return None
     s = str(x).strip()
