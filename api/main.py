@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from pathlib import Path
-from typing import List, Optional
+from typing import List
+from datetime import datetime
+
+from api.db import init_db, insert_request, fetch_recent
 
 from api.schemas import (
     RecommendRequest,
@@ -17,6 +20,7 @@ from recommender.sens import (
 )
 
 app = FastAPI(title="Valorant Sensitivity API", version="1.0.0")
+init_db()
 
 # Load dataset once at startup
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +47,16 @@ def recommend(req: RecommendRequest):
             "cm360": round(cur_cm, 1),
         }
 
+    insert_request(
+        dpi=req.dpi,
+        aim_style=req.aim_style,
+        goal=req.goal,
+        pad=req.pad,
+        mid_sens=base["suggested_sens"]["mid"],
+        mid_edpi=base["mid_edpi"],
+        created_at=datetime.utcnow().isoformat(),
+    )
+
     return {**base, "current": current_block}
 
 
@@ -52,3 +66,12 @@ def similar(req: SimilarRequest):
     df = nearest_pro_examples(DF, target_edpi=req.edpi, k=req.k)
     records = df.to_dict(orient="records")
     return records
+
+
+@app.get("/history")
+def history(limit: int = 20):
+    """
+    Returns the most recent recommendation requests stored by the backend.
+    """
+    limit = max(1, min(limit, 200))
+    return fetch_recent(limit=limit)

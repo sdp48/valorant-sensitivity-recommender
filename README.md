@@ -2,7 +2,7 @@
 
 This project is a small web app that helps Valorant players find a reasonable in-game sensitivity based on professional player settings and basic aiming heuristics.
 
-I built it mainly to better understand how sensitivity, eDPI, and cm/360 relate to each other, and to practice working with real-world data and a simple backend API. The app is built with Python and Streamlit and pulls data from Liquipedia.
+I built it mainly to better understand how sensitivity, eDPI, and cm/360 relate to each other, and to practice working with real-world data and a simple backend API. The app is built with Python, Streamlit, and a small FastAPI backend and pulls data from Liquipedia.
 
 ---
 
@@ -15,6 +15,7 @@ I built it mainly to better understand how sensitivity, eDPI, and cm/360 relate 
 - Compares the user’s sensitivity to pro players using eDPI  
 - Shows where the user sits relative to pros using a simple distribution chart
 - Serves recommendations and similarity queries through a small REST API used by the frontend
+- Stores recent recommendation requests in a local SQLite database and exposes them through a history endpoint
 
 ---
 
